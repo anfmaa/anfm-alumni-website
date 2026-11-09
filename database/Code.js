@@ -2,7 +2,7 @@
 function properties() { return PropertiesService.getScriptProperties(); }
 function db() { return SpreadsheetApp.openById(properties().getProperty('SPREADSHEET_ID')); }
 function setup() {
-  ['Members','Posts','Audit','Reports'].forEach(function(name) {
+  ['Members','Posts','Audit','Reports','Legacy','Claims','Appointments','Notifications'].forEach(function(name) {
     var s=db().getSheetByName(name) || db().insertSheet(name);
     if (!s.getLastRow()) s.appendRow(['id','json']);
   });
@@ -23,22 +23,28 @@ function role(actor){
   var m=rows('Members').find(function(x){return x.id===actor.id;});
   return m && m.role==='moderator' ? 'moderator' : 'member';
 }
-function publicMember(m){return {id:m.id,name:m.name,batch:m.batch,stream:m.stream,profession:m.profession,location:m.location,bio:m.bio,blood:m.donor?m.blood:'',donor:!!m.donor,phone:m.publicContact?m.phone:'',featured:!!m.featured};}
+function publicMember(m){return {memberType:m.memberType||'alumni',interests:m.interests||'',mentoring:!!m.mentoring,id:m.id,name:m.name,batch:m.batch,stream:m.stream,profession:m.profession,currentPosition:m.currentPosition||'',institution:m.institution||'',location:m.location,bio:m.bio,blood:m.donor?m.blood:'',donor:!!m.donor,phone:m.publicContact?m.phone:'',featured:!!m.featured};}
 function live(p){return p.status==='approved' && (!p.deadline || Date.parse(p.deadline)>Date.now());}
 function publicPost(p){var q={};['id','type','title','body','authorName','location','blood','units','deadline','paymentInfo','target','contact','featured','updatedAt','imageUrl','imageSource','imageCredit'].forEach(function(k){q[k]=p[k];});return q;}
 function dispatch(action,d,actor){
   if(action==='public')return {members:rows('Members').filter(function(m){return m.status==='approved';}).map(publicMember),posts:rows('Posts').filter(live).map(publicPost)};
+  if(action==='legacySearch')return searchLegacy(d);
   requireValue(actor && actor.id && actor.email,'Sign in required');
   var r=role(actor), staff=r==='admin'||r==='moderator', members=rows('Members'), me=members.find(function(m){return m.id===actor.id;});
-  if(action==='me')return {role:r,profile:me || null,posts:rows('Posts').filter(function(p){return p.owner===actor.id;}),queue:staff?{members:members.filter(function(m){return m.status==='pending';}),posts:rows('Posts').filter(function(p){return p.status==='pending';}),reports:rows('Reports').filter(function(p){return p.status==='open';})}:null,members:r==='admin'?members.map(function(m){return {id:m.id,name:m.name,role:m.role || 'member',status:m.status};}):[],audit:r==='admin'?rows('Audit').slice(-100).reverse():[]};
+  var linked=rows('Legacy').find(function(x){return x.owner===actor.id;});
+  var extra=memberActions(action,d,actor,r,me,linked);if(extra!==null)return extra;
+  if(action==='me')return {identity:{name:text(actor.name),email:actor.email},role:r,profile:me || null,legacyRecord:linked||null,claims:rows('Claims').filter(function(c){return c.owner===actor.id;}),claimQueue:r==='admin'?rows('Claims').filter(function(c){return c.status==='pending';}).map(function(c){var q=JSON.parse(JSON.stringify(c));q.record=rows('Legacy').find(function(x){return x.id===c.legacyId;});return q;}):[],appointments:rows('Appointments').filter(function(a){return a.sender===actor.id || a.recipient===actor.id;}),notifications:rows('Notifications').filter(function(n){return n.owner===actor.id;}).slice(-50).reverse(),posts:rows('Posts').filter(function(p){return p.owner===actor.id;}),queue:staff?{members:members.filter(function(m){return m.status==='pending';}).map(function(m){var q=JSON.parse(JSON.stringify(m));q.legacyCandidates=legacyMatches(m);return q;}),posts:rows('Posts').filter(function(p){return p.status==='pending';}),reports:rows('Reports').filter(function(p){return p.status==='open';})}:null,members:r==='admin'?members.map(function(m){return {id:m.id,name:m.name,role:m.role || 'member',status:m.status};}):[],audit:r==='admin'?rows('Audit').slice(-100).reverse():[]};
   if(action==='profile'){
-    requireValue(text(d.name),'Name is required'); requireValue(text(d.batch),'Batch is required');requireValue(text(d.verification),'Provide alumni verification details');requireValue(d.consent===true,'Consent is required');
-    var m={id:actor.id,email:actor.email,name:text(d.name),batch:text(d.batch,20),stream:text(d.stream,50),profession:text(d.profession),location:text(d.location),bio:text(d.bio,2000),phone:text(d.phone,60),blood:text(d.blood,5),donor:d.donor===true,publicContact:d.publicContact===true,verification:text(d.verification,500),status:'pending',role:me?me.role || 'member':'member',featured:false,updatedAt:now(),version:(me?me.version || 0:0)+1};
+    requireValue(text(d.name),'Name is required'); requireValue(text(d.batch),d.memberType==='student'?'Current class is required':'Dakhil batch is required');requireValue(text(d.verification),'Provide alumni verification details');requireValue(d.consent===true,'Consent is required');
+    requireValue(!d.claimSelected || linked,'Verify the selected record before completing registration');
+    ['dakhilBatch','alimBatch','fazilBatch'].forEach(function(k){requireValue(!text(d[k]) || /^(199[3-9]|20[01][0-9]|202[0-6])$/.test(text(d[k])),'Select a year from 1993 to 2026');});
+    if(d.memberType!=='student')requireValue(/^(199[3-9]|20[01][0-9]|202[0-6])$/.test(text(d.batch)),'Select a Dakhil year from 1993 to 2026');
+    var m={currentClass:d.memberType==='student'?text(d.currentClass||d.batch,40):'',dakhilBatch:text(d.dakhilBatch||(d.memberType==='student'?'':d.batch),20),currentPosition:text(d.currentPosition),institution:text(d.institution),memberType:d.memberType==='student'?'student':'alumni',interests:text(d.interests,300),mentoring:d.mentoring===true,id:actor.id,email:actor.email,name:text(d.name),batch:text(d.batch,20),stream:text(d.stream,50),profession:text(d.profession),location:text(d.location),bio:text(d.bio,2000),phone:text(d.phone,60),blood:text(d.blood,5),donor:d.donor===true,publicContact:d.publicContact===true,verification:text(d.verification,500),legacyId:linked?linked.id:(me?me.legacyId||'':''),claimKey:text(d.claimKey,80),claimBatch:text(d.claimBatch,20),father:text(d.father),permanentAddress:text(d.permanentAddress,500),alimBatch:text(d.alimBatch,20),fazilBatch:text(d.fazilBatch,20),status:'pending',role:me?me.role || 'member':'member',featured:false,updatedAt:now(),version:(me?me.version || 0:0)+1};
     if(m.donor)requireValue(['A+','A-','B+','B-','O+','O-','AB+','AB-'].indexOf(m.blood)>=0,'Select a blood group');
     put('Members',m);audit(actor,'profile.submit',m.id);return {ok:true};
   }
   if(action==='submit'){
-    requireValue(me && me.status==='approved','Only verified alumni may submit posts');
+    requireValue(me && me.status==='approved','Only verified members may submit posts');
     requireValue(['story','blood','fundraiser','campaign'].indexOf(d.type)>=0,'Invalid post type');
     requireValue(text(d.title) && text(d.body),'Title and description are required');requireValue(d.consent===true,'Confirm permission to publish');
     var old=d.id?rows('Posts').find(function(p){return p.id===d.id;}):null;
@@ -58,6 +64,13 @@ function dispatch(action,d,actor){
     requireValue((item.owner || item.id)!==actor.id,'You cannot review your own submission');
     requireValue(item.status==='pending' && item.version===d.version,'Record changed. Refresh the queue');
     requireValue(['approved','rejected'].indexOf(d.status)>=0,'Invalid decision');requireValue(text(d.reason),'A review reason is required');requireValue(d.noConflict===true,'Confirm no conflict of interest');
+    if(d.collection==='Members' && d.status==='approved' && item.claimKey && !item.legacyId){
+      requireValue(r==='admin','An admin must verify existing-record claims');
+      var matches=legacyMatches(item);requireValue(matches.length===1,'No unique legacy match. Ask member to correct ID and batch.');
+      var legacy=matches[0];requireValue(!legacy.owner || legacy.owner===item.id,'This legacy record is already linked');
+      requireValue(d.identityChecked===true,'Confirm identity independently against the original record');
+      legacy.owner=item.id;legacy.linkedAt=now();put('Legacy',legacy);item.legacyId=legacy.id;
+    }
     item.status=d.status;item.reason=text(d.reason,1000);item.reviewedBy=actor.id;item.version++;item.updatedAt=now();put(d.collection,item);audit(actor,'review.'+d.status,item.id,item.reason);return {ok:true};
   }
   if(action==='feature'){
@@ -76,7 +89,7 @@ function dispatch(action,d,actor){
   if(action==='resolveReport'){
     requireValue(staff,'Moderator access required');var report=rows('Reports').find(function(x){return x.id===d.id;});requireValue(report,'Report not found');requireValue(text(d.reason),'Resolution reason required');report.status='resolved';report.resolution=text(d.reason,1000);put('Reports',report);audit(actor,'report.resolve',report.id,report.resolution);return {ok:true};
   }
-  if(action==='export'){requireValue(r==='admin','Admin access required');audit(actor,'export','all');return {members:rows('Members'),posts:rows('Posts'),reports:rows('Reports'),audit:rows('Audit')};}
+  if(action==='export'){requireValue(r==='admin','Admin access required');audit(actor,'export','all');return {members:rows('Members'),posts:rows('Posts'),reports:rows('Reports'),legacy:rows('Legacy'),claims:rows('Claims'),appointments:rows('Appointments'),notifications:rows('Notifications'),audit:rows('Audit')};}
   if(action==='withdrawProfile'){
     requireValue(me,'Profile not found');me.status='withdrawn';me.featured=false;put('Members',me);audit(actor,'profile.withdraw',me.id);return {ok:true};
   }
@@ -88,9 +101,72 @@ function doPost(e){
     var b=JSON.parse(e.postData.contents), expected=properties().getProperty('BACKEND_SECRET');
     requireValue(expected && b.secret===expected,'Unauthorized');
     requireValue(lock.tryLock(10000),'Service busy. Try again shortly.');
+    if(b.action==='public'||b.action==='legacySearch'){var publicCache=CacheService.getScriptCache(),publicKey='public-rate:'+text(b.rateKey,64),publicCount=Number(publicCache.get(publicKey)||0);requireValue(publicCount<60,'Too many requests. Try again in a minute.');publicCache.put(publicKey,String(publicCount+1),60);}
     if(b.action!=='public' && b.action!=='me' && b.actor){var cache=CacheService.getScriptCache(),key='rate:'+b.actor.id,count=Number(cache.get(key)||0);requireValue(count<30,'Too many changes. Wait one minute.');cache.put(key,String(count+1),60);}
     return json(dispatch(b.action,b.data || {},b.actor));
   }catch(err){return json({error:err.message});}finally{if(lock.hasLock())lock.releaseLock();}
 }
 function json(x){return ContentService.createTextOutput(JSON.stringify(x)).setMimeType(ContentService.MimeType.JSON);}
 function backup(){var folder=DriveApp.getFolderById(properties().getProperty('BACKUP_FOLDER_ID'));DriveApp.getFileById(properties().getProperty('SPREADSHEET_ID')).makeCopy('ANFMAA backup '+now(),folder);}
+
+function normalizeKey(v){return String(v||'').trim().replace(/[০-৯]/g,function(c){return '০১২৩৪৫৬৭৮৯'.indexOf(c);}).replace(/[\s()+-]/g,'').replace(/^00880/,'0').replace(/^880/,'0').toUpperCase();}
+function legacyMatches(m){if(!m.claimKey)return [];var key=normalizeKey(m.claimKey);return rows('Legacy').filter(function(x){return (normalizeKey(x.id)===key || normalizeKey(x.phone)===key) && normalizeKey(x.batch)===normalizeKey(m.claimBatch);});}
+/* Convert the original XLSX to Google Sheets first. Import is idempotent for an unchanged source row order. Do not sort the source copy. */
+function importLegacySource(){
+ var lock=LockService.getScriptLock();lock.waitLock(30000);
+ try{setup();var sourceId=properties().getProperty('LEGACY_SOURCE_ID');requireValue(sourceId,'Set LEGACY_SOURCE_ID to the converted Google Sheet');
+ var sheet=SpreadsheetApp.openById(sourceId).getSheets()[0], data=sheet.getDataRange().getDisplayValues();
+ requireValue(data[0][1].indexOf('Name')>=0 && data[0][6].indexOf('Mobile')>=0,'Unexpected source columns; import stopped');
+ var existing=rows('Legacy'), count=0;
+ data.slice(1).forEach(function(v,i){if(!text(v[1]))return;var id='ANF-'+String(i+1).padStart(6,'0');
+ if(existing.some(function(x){return x.sourceId===sourceId && x.sourceRow===i+2;}))return;
+ requireValue(!existing.some(function(x){return x.id===id;}),'ID conflict: use the original source copy');
+ var record={id:id,sourceId:sourceId,sourceRow:i+2,name:text(v[1]),father:text(v[2]),location:text(v[3]),batch:text(v[4],20),gender:text(v[5]),phone:text(v[6],60),blood:text(v[7],5),profession:text(v[8]),permanentAddress:text(v[9],500),alimBatch:text(v[10],20),fazilBatch:text(v[11],20),owner:''};put('Legacy',record);existing.push(record);count++;});
+ return {imported:count,total:rows('Legacy').length};
+ }finally{lock.releaseLock();}
+}
+
+function searchLegacy(d){
+ var name=text(d.name).toLowerCase(),year=normalizeKey(text(d.year,20)),offset=Math.max(0,Math.floor(Number(d.offset)||0));
+ var members=rows('Members');
+ var found=rows('Legacy').filter(function(x){return (!name||String(x.name).toLowerCase().indexOf(name)>=0)&&(!year||normalizeKey(x.batch)===year);});
+ return {items:found.slice(offset,offset+20).map(function(x){var m=members.find(function(m){return m.legacyId===x.id && m.status==='approved';});return {id:x.id,name:x.name,batch:x.batch,profile:m?publicMember(m):null};}),next:offset+20<found.length?offset+20:null};
+}
+function notice(owner,message,reference){put('Notifications',{id:uid(),owner:owner,message:message,reference:reference,read:false,at:now()});}
+function memberActions(action,d,actor,r,me,linked){
+ if(action==='claim'){
+  requireValue(!linked,'Your account is already linked');requireValue(text(d.evidence),'Provide private verification details');
+  var record=rows('Legacy').find(function(x){return x.id===d.id;});requireValue(record,'Select a search result');
+  requireValue(!record.owner,'This record cannot be claimed. Contact the administrator.');
+  requireValue(!rows('Claims').some(function(c){return c.owner===actor.id && c.status==='pending';}),'You already have a pending verification request');
+  var c={id:uid(),owner:actor.id,email:actor.email,legacyId:record.id,name:record.name,evidence:text(d.evidence,500),status:'pending',version:1,at:now()};put('Claims',c);audit(actor,'claim.submit',c.id);return {ok:true};
+ }
+ if(action==='verifyClaim'){
+  requireValue(r==='admin','Admin access required');var c=rows('Claims').find(function(c){return c.id===d.id;});
+  requireValue(c && c.status==='pending' && c.version===d.version,'Request changed. Refresh');requireValue(c.owner!==actor.id,'You cannot verify your own identity');
+  requireValue(d.noConflict===true && text(d.reason),'Review reason and no-conflict declaration required');requireValue(['approved','rejected'].indexOf(d.status)>=0,'Invalid decision');
+  if(d.status==='approved'){
+   requireValue(d.identityChecked===true,'Verify identity independently first');var all=rows('Legacy'),record=all.find(function(x){return x.id===c.legacyId;});
+   requireValue(record && (!record.owner||record.owner===c.owner),'Record already linked');requireValue(!all.some(function(x){return x.owner===c.owner && x.id!==record.id;}),'Account already linked');
+   record.owner=c.owner;record.linkedAt=now();put('Legacy',record);
+  }
+  c.status=d.status;c.reason=text(d.reason,500);c.version++;put('Claims',c);notice(c.owner,'Identity verification '+d.status+'. '+(d.status==='approved'?'Complete your registration.':c.reason),c.id);audit(actor,'claim.'+d.status,c.id,c.reason);return {ok:true};
+ }
+ if(action==='appointment'){
+  requireValue(me && me.status==='approved','Verified membership required');var recipient=rows('Members').find(function(m){return m.id===d.recipient && m.status==='approved' && m.mentoring;});
+  requireValue(recipient && recipient.id!==actor.id,'Select another available mentor');requireValue(text(d.topic) && text(d.message),'Topic and message required');
+  var when=Date.parse(d.time);requireValue(Number.isFinite(when)&&when>Date.now(),'Choose a future appointment time');requireValue(text(d.timezone),'Time zone required');
+  var existing=rows('Appointments');requireValue(!existing.some(function(a){return a.sender===actor.id && a.recipient===recipient.id && a.status==='pending';}),'A request to this mentor is already pending');
+  requireValue(existing.filter(function(a){return a.sender===actor.id && Date.parse(a.at)>Date.now()-86400000;}).length<5,'Maximum five appointment requests per day');
+  var a={id:uid(),sender:actor.id,recipient:recipient.id,senderName:me.name,recipientName:recipient.name,topic:text(d.topic,160),message:text(d.message,1000),time:new Date(when).toISOString(),timezone:text(d.timezone,80),status:'pending',version:1,at:now()};
+  put('Appointments',a);notice(recipient.id,me.name+' requested career counselling: '+a.topic,a.id);audit(actor,'appointment.request',a.id);return {ok:true};
+ }
+ if(action==='appointmentReply'){
+  var a=rows('Appointments').find(function(a){return a.id===d.id;});requireValue(a && a.version===d.version,'Request changed. Refresh');
+  if(d.status==='cancelled')requireValue(a.sender===actor.id && ['pending','accepted'].indexOf(a.status)>=0,'Only the requester can cancel');
+  else {requireValue(a.recipient===actor.id && a.status==='pending','Only the recipient can respond');requireValue(['accepted','declined'].indexOf(d.status)>=0,'Invalid response');if(d.status==='accepted')requireValue(Date.parse(a.time)>Date.now(),'The requested time has passed');}
+  a.status=d.status;a.reply=text(d.reply,500);a.version++;put('Appointments',a);notice(actor.id===a.sender?a.recipient:a.sender,'Appointment '+a.status+': '+a.topic,a.id);audit(actor,'appointment.'+a.status,a.id);return {ok:true};
+ }
+ if(action==='readNotification'){var n=rows('Notifications').find(function(n){return n.id===d.id;});requireValue(n && n.owner===actor.id,'Notification not found');n.read=true;put('Notifications',n);return {ok:true};}
+ return null;
+}

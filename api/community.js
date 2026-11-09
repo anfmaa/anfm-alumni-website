@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import { OAuth2Client } from 'google-auth-library';
 const client = new OAuth2Client();
 export default async function handler(req, res) {
@@ -10,8 +11,10 @@ export default async function handler(req, res) {
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     if (!body || JSON.stringify(body).length > 24000) return res.status(400).json({error:'Invalid or oversized request'});
+    const allowed=['public','legacySearch','me','profile','claim','verifyClaim','appointment','appointmentReply','readNotification','submit','review','feature','role','close','report','resolveReport','export','withdrawProfile'];
+    if (!allowed.includes(body.action)) return res.status(400).json({error:'Unknown action'});
     let actor = null;
-    if (body.action !== 'public') {
+    if (!['public','legacySearch'].includes(body.action)) {
       const token = String(req.headers.authorization || '').replace(/^Bearer /, '');
       if (!token) return res.status(401).json({error:'Please sign in.'});
       try {
@@ -21,7 +24,7 @@ export default async function handler(req, res) {
         actor = {id:p.sub,email:p.email,name:p.name || ''};
       } catch { return res.status(401).json({error:'Sign-in expired or invalid. Please sign in again.'}); }
     }
-    const response = await fetch(process.env.APPS_SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret:process.env.BACKEND_SECRET,action:body.action,data:body.data || {},actor}),signal:AbortSignal.timeout(25000)});
+    const response = await fetch(process.env.APPS_SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret:process.env.BACKEND_SECRET,rateKey:createHmac('sha256',process.env.BACKEND_SECRET).update(String(req.headers['x-vercel-forwarded-for'] || req.socket?.remoteAddress || 'unknown')).digest('hex'),action:body.action,data:body.data || {},actor}),signal:AbortSignal.timeout(25000)});
     if (!response.ok) throw new Error('upstream');
     const result = await response.json();
     return res.status(result.error ? 400 : 200).json(result);

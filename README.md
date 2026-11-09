@@ -31,3 +31,11 @@ The script uses your currently authenticated GitHub account. That account must h
 ## Operational guidance
 
 Read docs/COMMUNITY_OPERATIONS.md before admitting members. Keep member response files and backups restricted. Do not put the private spreadsheet in a publicly shared image folder.
+
+## November registration update
+
+Start with docs/REGISTRATION_TEST.md for the local member/admin demo and private source import. Use scripts/apply-update.sh for this release, not the older push-update.sh. The 133 legacy member records are not bundled in the public code.
+
+## Name search and counselling update
+
+Use docs/REGISTRATION_TEST.md for the revised no-ID onboarding demo. Use docs/SECURITY_AND_CAPACITY.md for the source audit, external-service disclosures and live setup limits. No deployment or real-data import has been performed by this package.

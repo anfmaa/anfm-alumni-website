@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check assets/app.js && node --check api/community.js && node --check database/Code.js",
-    "dev": "node scripts/preview.js"
+    "check": "node --check assets/app.js && node --check api/community.js && node --check database/Code.js && node --check assets/member-flow.js && node --check scripts/demo.js",
+    "dev": "node scripts/demo.js",
+    "demo": "node scripts/demo.js"
   },
   "dependencies": {
     "google-auth-library": "^10.0.0"

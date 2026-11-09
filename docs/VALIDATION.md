@@ -9,3 +9,5 @@ The desktop browser preview was inspected. The official link, supplied logo and 
 Not yet verified: live Google sign-in, deployed Apps Script access, production Vercel runtime, real member submissions, mobile device rendering and Facebook crawler preview. Complete the deployment acceptance checks before admitting members.
 
 No live repository push, Google account configuration, database creation, scheduled trigger, or production deployment was performed in this handoff.
+
+Registration update: 13 tests passed, including legacy claim identity checks and duplicate linking rejection. Local HTTP demo verified registration, admin approval, private linked dashboard and public field filtering. No live backend configuration or import was performed. Live retrieval was unavailable; mobile/browser visual verification remains pending.
