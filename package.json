@@ -1,0 +1,17 @@
+{
+  "name": "anfmaa-community",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check assets/app.js && node --check api/community.js && node --check database/Code.js",
+    "dev": "node scripts/preview.js"
+  },
+  "dependencies": {
+    "google-auth-library": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
