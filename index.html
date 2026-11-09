@@ -5,41 +5,859 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ANFMAA | Abeda Noor Fazil Madrasah Alumni Association</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SheetJS for instant Excel (.xlsx / .csv) Import & Export directly in browser -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', 'Hind Siliguri', sans-serif; background: #fafafa; color: #09090b; scroll-behavior: smooth; }
-    .mono-card { background: #ffffff; border: 1px solid #e4e4e7; box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06); transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
-    .mono-card:hover { transform: translateY(-4px); border-color: #09090b; box-shadow: 0 20px 32px -10px rgba(0, 0, 0, 0.16); }
-    .bw-avatar { filter: grayscale(100%); transition: filter 0.3s ease; }
-    .mono-card:hover .bw-avatar { filter: grayscale(0%); }
+    :root {
+      --bg-primary: #FFFFFF;
+      --bg-secondary: #F4F4F5;
+      --border-silver: #E4E4E7;
+      --text-muted: #52525B;
+      --text-ink: #09090B;
+    }
+    body {
+      font-family: 'Inter', 'Hind Siliguri', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-ink);
+      scroll-behavior: smooth;
+    }
+    .mono-card {
+      background: #FFFFFF;
+      border: 1px solid #E4E4E7;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .mono-card:hover {
+      transform: translateY(-4px);
+      border-color: #09090B;
+      box-shadow: 0 20px 32px -10px rgba(0, 0, 0, 0.18);
+    }
+    .bw-media {
+      filter: grayscale(100%) contrast(105%);
+      transition: filter 0.35s ease, transform 0.35s ease;
+    }
+    .mono-card:hover .bw-media, .slide-frame:hover .bw-media {
+      filter: grayscale(15%) contrast(100%);
+    }
+    .pill-active {
+      background-color: #09090B !important;
+      color: #FFFFFF !important;
+      border-color: #09090B !important;
+    }
   </style>
 </head>
 <body class="antialiased selection:bg-black selection:text-white">
+
+  <!-- TOP INSTITUTIONAL BAR -->
+  <div class="bg-zinc-950 text-zinc-300 text-xs py-2 px-4 border-b border-zinc-800">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-3">
+        <span class="font-semibold text-white">আবেদা-নূর ফাযিল মাদ্রাসা (Abeda Noor Fazil Madrasah)</span>
+        <span class="hidden sm:inline text-zinc-500">|</span>
+        <span class="hidden sm:inline">Gallai, Chandina, Cumilla</span>
+        <span class="px-2 py-0.5 bg-zinc-800 text-zinc-200 rounded text-[11px]">EIIN: 105374</span>
+        <span class="hidden md:inline px-2 py-0.5 bg-zinc-800 text-zinc-200 rounded text-[11px]">Code: 18230</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="tel:01309105374" class="hover:text-white">Phone: 01309-105374</a>
+        <a href="mailto:anfmalumnia@gmail.com" class="hover:text-white">anfmalumnia@gmail.com</a>
+        <a href="https://abedanoorfazilmadrasah.com/teacherscat/general/" target="_blank" class="underline hover:text-white">Official Madrasah Site &nearr;</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- STICKY MONOCHROME NAVBAR -->
   <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-zinc-200 shadow-sm">
     <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-lg bg-black text-white flex items-center justify-center font-bold text-sm tracking-tighter shadow">AN</div>
+      <a href="#home" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-zinc-950 text-white flex items-center justify-center font-bold text-base tracking-tighter shadow">AN</div>
         <div>
-          <div class="font-bold text-base leading-none tracking-tight">ANFMAA</div>
-          <div class="text-[11px] text-zinc-500 mt-0.5">আবেদা-নূর ফাযিল মাদ্রাসা অ্যালামনাই</div>
+          <div class="font-bold text-base leading-none tracking-tight text-zinc-950">ANFMAA</div>
+          <div class="text-[11px] text-zinc-600 mt-0.5">আবেদা-নূর ফাযিল মাদ্রাসা অ্যালামনাই অ্যাসোসিয়েশন</div>
         </div>
-      </div>
+      </a>
+
+      <nav class="hidden lg:flex items-center space-x-5 text-sm font-medium text-zinc-600">
+        <a href="#about" class="hover:text-black transition">Heritage & Legacy</a>
+        <a href="#directory" class="hover:text-black transition">Alumni Story & Directory</a>
+        <a href="#gallery" class="hover:text-black transition">Campus & Slideshow</a>
+        <a href="#committee" class="hover:text-black transition">Committee</a>
+        <a href="#gotontontra" class="hover:text-black transition">গঠনতন্ত্র (Constitution)</a>
+        <a href="#excel-sync" class="hover:text-black transition">Excel Database</a>
+      </nav>
+
       <div class="flex items-center gap-2">
-        <button class="bg-zinc-950 hover:bg-zinc-800 text-white text-xs sm:text-sm font-medium px-4 py-2 rounded-lg shadow-md hover:shadow-xl transition">
-          + Join Alumni Database
+        <button onclick="openRegModal()" class="bg-zinc-950 hover:bg-zinc-800 text-white text-xs sm:text-sm font-medium px-4 py-2.5 rounded-lg shadow-md hover:shadow-xl transition">
+          + Join Alumni
         </button>
       </div>
     </div>
   </header>
-  <section class="py-14 sm:py-20 px-4 border-b border-zinc-200 bg-gradient-to-b from-white via-zinc-50 to-zinc-100/80">
+
+  <!-- HERO SECTION -->
+  <section id="home" class="py-16 sm:py-20 px-4 border-b border-zinc-200 bg-gradient-to-b from-white via-zinc-50 to-zinc-100">
     <div class="max-w-4xl mx-auto text-center">
-      <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-zinc-950 mb-3">
-        Abeda Noor Fazil Madrasah Alumni Association
-      </h1>
-      <p class="text-base sm:text-lg text-zinc-600 font-medium mb-2">
-        আবেদা-নূর ফাযিল মাদ্রাসা অ্যালামনাই অ্যাসোসিয়েশন (ANFMAA)
+      <p class="text-xs uppercase tracking-widest text-zinc-600 font-semibold mb-2">
+        "দ্বীনি আদর্শ ও ভ্রাতৃত্বের বন্ধনে, গল্লাই থেকে বিশ্বপানে"
       </p>
+      <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-zinc-950 mb-4">
+        Rooted in Values, Connected for Life.
+      </h1>
+      <p class="text-zinc-600 max-w-2xl mx-auto text-sm sm:text-base mb-8 leading-relaxed">
+        The official monochrome digital archive and alumni directory of <strong>Abeda Noor Fazil Madrasah</strong> (Gallai, Chandina, Cumilla). Connecting Ebtedayee, Dakhil, Alim, and Fazil graduates across Bangladesh and around the globe.
+      </p>
+
+      <div class="flex flex-wrap justify-center gap-3 mb-12">
+        <a href="#directory" class="bg-zinc-950 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow hover:bg-zinc-800 transition">
+          Explore Alumni Directory
+        </a>
+        <button onclick="openRegModal()" class="bg-white text-zinc-950 border border-zinc-300 px-5 py-2.5 rounded-lg text-sm font-medium shadow-sm hover:border-black transition">
+          Share Your Alumni Story
+        </button>
+        <a href="#excel-sync" class="bg-zinc-100 text-zinc-900 border border-zinc-300 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-zinc-200 transition">
+          Import / Export Excel (.xlsx)
+        </a>
+      </div>
+
+      <!-- 4 Monochrome Elevation KPI Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
+        <div class="mono-card p-4 rounded-xl">
+          <div class="text-2xl font-bold text-zinc-950" id="statTotal">1,250+</div>
+          <div class="text-xs text-zinc-600">Registered Alumni</div>
+        </div>
+        <div class="mono-card p-4 rounded-xl">
+          <div class="text-2xl font-bold text-zinc-950">38+</div>
+          <div class="text-xs text-zinc-600">Dakhil & Alim Batches</div>
+        </div>
+        <div class="mono-card p-4 rounded-xl">
+          <div class="text-2xl font-bold text-zinc-950" id="statBlood">450+</div>
+          <div class="text-xs text-zinc-600">Ready Blood Donors</div>
+        </div>
+        <div class="mono-card p-4 rounded-xl">
+          <div class="text-2xl font-bold text-zinc-950">18+</div>
+          <div class="text-xs text-zinc-600">Countries Represented</div>
+        </div>
+      </div>
     </div>
   </section>
+
+  <!-- 1. ORGANIZATION SNAPSHOT & FOUNDING LEGACY -->
+  <section id="about" class="py-14 px-4 border-b border-zinc-200 bg-white">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="mono-card p-6 rounded-2xl lg:col-span-2">
+          <span class="text-xs font-bold uppercase tracking-widest text-zinc-500">Institutional Heritage</span>
+          <h2 class="text-2xl font-bold text-zinc-950 mt-1 mb-3">Abeda Noor Fazil Madrasah (আবেদা-নূর ফাযিল মাদ্রাসা)</h2>
+          <p class="text-sm text-zinc-600 leading-relaxed mb-4">
+            Located in <strong>Gallai, Chandina, Cumilla</strong>, Abeda Noor Fazil Madrasah was founded by the late <strong>Irshadul Haq (মরহুম জনাব ইরশাদুল হক)</strong>, former Education Secretary, inspired by the lifelong educational dedication of <strong>Late Noor Uddin Master (মরহুম নূর উদ্দিন মাষ্টার)</strong> under the umbrella of the <strong>Abeda-Noor Foundation</strong>.
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-zinc-100 p-4 rounded-xl border border-zinc-200">
+            <div><strong>Academic Levels:</strong> Ebtedayee, Dakhil (Secondary), Alim (Higher Secondary), Fazil (Degree)</div>
+            <div><strong>Departments:</strong> Arabic Department & General Department (Science, Humanities, ICT, Agriculture, English, Math, History, Bangla)</div>
+            <div><strong>EIIN & Code:</strong> EIIN: 105374 | Institute Code: 18230</div>
+            <div><strong>Official Contact:</strong> 01309-105374 | abedanoorfazilmadrasha@gmail.com</div>
+          </div>
+        </div>
+
+        <div class="mono-card p-6 rounded-2xl flex flex-col justify-between bg-zinc-50">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-zinc-500">Association Identity</span>
+            <h3 class="text-xl font-bold text-zinc-950 mt-1 mb-2">ANFMAA Official Names</h3>
+            <ul class="text-xs space-y-2 text-zinc-700">
+              <li>&bull; <strong>Official:</strong> Abeda Noor Fazil Madrasah Alumni Association (ANFMAA)</li>
+              <li>&bull; <strong>Bangla:</strong> আবেদা-নূর ফাযিল মাদ্রাসা প্রাক্তন ছাত্র-ছাত্রী পরিষদ</li>
+              <li>&bull; <strong>Network:</strong> Kafela-e-Abeda Noor / Alokito Abeda Noor</li>
+            </ul>
+          </div>
+          <div class="mt-4 pt-3 border-t border-zinc-200 text-xs text-zinc-600">
+            <strong>Official Alumni Email:</strong> anfmalumnia@gmail.com
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. ALUMNI STORY & INTERACTIVE DATABASE DIRECTORY -->
+  <section id="directory" class="py-14 px-4 bg-zinc-50 border-b border-zinc-200">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-widest text-zinc-500">Interactive Alumni Database</span>
+          <h2 class="text-2xl sm:text-3xl font-bold text-zinc-950 mt-1">Alumni Story & Directory</h2>
+          <p class="text-sm text-zinc-600">Click any card to read their full Madrasah story, verification info, mentorship availability, and contact details.</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="filterEmergencyBlood()" id="bloodBtn" class="px-3.5 py-2 text-xs font-semibold border border-zinc-300 bg-white rounded-lg hover:border-black transition">
+            🩸 Active Blood Donors Only
+          </button>
+          <button onclick="resetFilters()" class="px-3.5 py-2 text-xs font-medium border border-zinc-300 bg-white rounded-lg hover:border-black transition">
+            Reset Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Comprehensive Filter Bar -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 mb-8 p-3.5 bg-white rounded-xl border border-zinc-200 shadow-sm">
+        <input id="searchInput" oninput="filterAlumni()" type="text" placeholder="Search name, expert area, workplace, district..." class="lg:col-span-2 px-3 py-2 text-sm bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:bg-white focus:border-black" />
+        <select id="dakhilFilter" onchange="filterAlumni()" class="px-3 py-2 text-sm bg-zinc-50 border border-zinc-300 rounded-lg">
+          <option value="">All Dakhil Batches</option>
+          <option value="2006">Dakhil 2006</option>
+          <option value="2008">Dakhil 2008</option>
+          <option value="2010">Dakhil 2010</option>
+          <option value="2011">Dakhil 2011</option>
+          <option value="2012">Dakhil 2012</option>
+          <option value="2013">Dakhil 2013</option>
+          <option value="2015">Dakhil 2015</option>
+          <option value="2016">Dakhil 2016</option>
+        </select>
+        <select id="deptFilter" onchange="filterAlumni()" class="px-3 py-2 text-sm bg-zinc-50 border border-zinc-300 rounded-lg">
+          <option value="">All Streams (General & Arabic)</option>
+          <option value="General">General Department</option>
+          <option value="Arabic">Arabic Department</option>
+        </select>
+        <select id="bloodFilter" onchange="filterAlumni()" class="px-3 py-2 text-sm bg-zinc-50 border border-zinc-300 rounded-lg">
+          <option value="">All Blood Groups</option>
+          <option value="O+">O+</option>
+          <option value="A+">A+</option>
+          <option value="B+">B+</option>
+          <option value="AB+">AB+</option>
+          <option value="O-">O-</option>
+          <option value="A-">A-</option>
+          <option value="B-">B-</option>
+          <option value="AB-">AB-</option>
+        </select>
+      </div>
+
+      <!-- Alumni Cards Grid -->
+      <div id="alumniGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </div>
+  </section>
+
+  <!-- 3. INTERACTIVE MONOCHROME SLIDESHOW & MEDIA ARCHIVE -->
+  <section id="gallery" class="py-14 px-4 bg-white border-b border-zinc-200">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-widest text-zinc-500">Visual Heritage</span>
+          <h2 class="text-2xl sm:text-3xl font-bold text-zinc-950 mt-1">Campus, Teachers & Reunion Slideshow</h2>
+          <p class="text-sm text-zinc-600">Categorized monochrome gallery synced with your 01_Website_Assets Google Drive folder.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="filterGallery('All')" class="gal-btn pill-active px-3 py-1.5 text-xs font-medium border border-zinc-300 rounded-lg">All Categories</button>
+          <button onclick="filterGallery('Campus')" class="gal-btn px-3 py-1.5 text-xs font-medium border border-zinc-300 rounded-lg">Campus</button>
+          <button onclick="filterGallery('Teachers')" class="gal-btn px-3 py-1.5 text-xs font-medium border border-zinc-300 rounded-lg">Teachers</button>
+          <button onclick="filterGallery('Reunion')" class="gal-btn px-3 py-1.5 text-xs font-medium border border-zinc-300 rounded-lg">Reunion & Events</button>
+        </div>
+      </div>
+
+      <div id="galleryGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+    </div>
+  </section>
+
+  <!-- 4. EXCEL (.XLSX / .CSV) & GOOGLE SHEETS DATABASE SYNC PANEL -->
+  <section id="excel-sync" class="py-14 px-4 bg-zinc-100 border-b border-zinc-200">
+    <div class="max-w-6xl mx-auto">
+      <div class="mono-card p-6 sm:p-8 rounded-2xl bg-white">
+        <div class="flex flex-col lg:flex-row justify-between gap-6 items-start lg:items-center">
+          <div class="max-w-2xl">
+            <span class="text-xs font-bold uppercase tracking-widest text-zinc-500">Excel & Google Sheets Pipeline</span>
+            <h2 class="text-2xl font-bold text-zinc-950 mt-1 mb-2">Live Excel (.xlsx / .csv) Database Manager</h2>
+            <p class="text-sm text-zinc-600 leading-relaxed">
+              Manage your alumni database directly from your <strong>ANFMAA_Alumni_Database.xlsx</strong> Excel file or Google Sheet. Upload an updated Excel file below to immediately populate the website directory, or export all current profiles to a clean Excel spreadsheet.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-3 shrink-0">
+            <label class="cursor-pointer bg-zinc-950 hover:bg-zinc-800 text-white text-xs sm:text-sm font-medium px-4 py-2.5 rounded-lg shadow transition">
+              📂 Upload Excel (.xlsx / .csv)
+              <input type="file" id="excelUpload" accept=".xlsx,.xls,.csv" onchange="handleExcelUpload(event)" class="hidden" />
+            </label>
+            <button onclick="exportToExcel()" class="bg-white hover:bg-zinc-100 text-zinc-950 border border-zinc-300 text-xs sm:text-sm font-medium px-4 py-2.5 rounded-lg shadow-sm transition">
+              ⬇ Download Excel (.xlsx)
+            </button>
+          </div>
+        </div>
+        <div id="excelStatus" class="hidden mt-4 p-3 rounded-lg bg-zinc-100 border border-zinc-300 text-xs font-medium text-zinc-800"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. ORGANIZATIONAL STRUCTURE & EXECUTIVE COMMITTEE -->
+  <section id="committee" class="py-14 px-4 bg-white border-b border-zinc-200">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-10">
+        <span class="text-xs font-bold uppercase tracking-widest text-zinc-500">Article 5 Governance</span>
+        <h2 class="text-2xl sm:text-3xl font-bold text-zinc-950 mt-1">সাংগঠনিক কাঠামো ও কার্যনির্বাহী কমিটি</h2>
+        <p class="text-sm text-zinc-600 mt-1">Three-Tier Leadership Structure of ANFMAA (Advisory Council, 2-Year Executive Committee & Batch Representatives)</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="mono-card p-4 rounded-xl"><div class="text-xs text-zinc-500">Advisory Council</div><div class="font-bold text-sm mt-0.5">প্রধান পৃষ্ঠপোষক (Principal) & Senior Teachers</div></div>
+        <div class="mono-card p-4 rounded-xl"><div class="text-xs text-zinc-500">Executive Post 01</div><div class="font-bold text-sm mt-0.5">সভাপতি (President) – ১ জন</div></div>
+        <div class="mono-card p-4 rounded-xl"><div class="text-xs text-zinc-500">Executive Post 02</div><div class="font-bold text-sm mt-0.5">সহ-সভাপতি (Vice President) – ৩ জন</div></div>
+        <div class="mono-card p-4 rounded-xl"><div class="text-xs text-zinc-500">Executive Post 03</div><div class="font-bold text-sm mt-0.5">সাধারণ সম্পাদক (General Secretary) – ১ জন</div></div>
+        <div class="mono-card p-4 rounded-xl"><div class="text-xs text-zinc-500">Executive Post 04</div><div class="font-bold text-sm mt-0.5">যুগ্ম-সাধারণ সম্পাদক (Joint Secretary) – ২ জন</div></div>
+        <div class="mono-card p-4 rounded-xl"><div class="text-xs text-zinc-500">Executive Post 05</div><div class="font-bold text-sm mt-0.5">সাংগঠনিক সম্পাদক (Organizing Secretary) – ১ জন</div></div>
+        <div class="mono-card p-4 rounded-xl"><div class="text-xs text-zinc-500">Executive Post 06</div><div class="font-bold text-sm mt-0.5">অর্থ সম্পাদক (Treasurer) – ১ জন</div></div>
+        <div class="mono-card p-4 rounded-xl"><div class="text-xs text-zinc-500">Executive Post 07</div><div class="font-bold text-sm mt-0.5">তথ্যপ্রযুক্তি ও ডাটাবেজ সম্পাদক – ১ জন</div></div>
+        <div class="mono-card p-4 rounded-xl"><div class="text-xs text-zinc-500">Executive Post 08</div><div class="font-bold text-sm mt-0.5">শিক্ষা, সাহিত্য ও ক্যারিয়ার সম্পাদক – ১ জন</div></div>
+        <div class="mono-card p-4 rounded-xl"><div class="text-xs text-zinc-500">Executive Post 09</div><div class="font-bold text-sm mt-0.5">সমাজকল্যাণ ও ব্লাড ব্যাংক সম্পাদক – ১ জন</div></div>
+        <div class="mono-card p-4 rounded-xl"><div class="text-xs text-zinc-500">Executive Post 10</div><div class="font-bold text-sm mt-0.5">ছাত্রী বিষয়ক সম্পাদক (Female Alumni) – ১ জন</div></div>
+        <div class="mono-card p-4 rounded-xl"><div class="text-xs text-zinc-500">Executive Post 11 & 12</div><div class="font-bold text-sm mt-0.5">প্রবাসী কল্যাণ সম্পাদক ও ব্যাচ প্রতিনিধি</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. COMPLETE GOTONTONTRA (গঠনতন্ত্র / CONSTITUTION - ALL 7 ARTICLES) -->
+  <section id="gotontontra" class="py-14 px-4 bg-zinc-50 border-b border-zinc-200">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-10">
+        <span class="text-xs font-bold uppercase tracking-widest text-zinc-500">Official Charter</span>
+        <h2 class="text-2xl sm:text-3xl font-bold text-zinc-950 mt-1">খসড়া গঠনতন্ত্র (Draft Constitution of ANFMAA)</h2>
+        <p class="text-sm text-zinc-600 mt-1">আবেদা-নূর ফাযিল মাদ্রাসা অ্যালামনাই অ্যাসোসিয়েশন (ANFMAA) — পূর্ণাঙ্গ ৭টি ধারা</p>
+      </div>
+
+      <div class="space-y-4">
+        <div class="mono-card p-6 rounded-2xl">
+          <h3 class="font-bold text-base sm:text-lg text-zinc-950 mb-1">ধারা ১: নাম ও ঠিকানা (Name & Address)</h3>
+          <p class="text-sm text-zinc-600 leading-relaxed">
+            <strong>১.১ নাম:</strong> সংগঠনের নাম হবে “আবেদা-নূর ফাযিল মাদ্রাসা অ্যালামনাই অ্যাসোসিয়েশন” (ইংরেজিতে: Abeda Noor Fazil Madrasah Alumni Association - ANFMAA)।<br/>
+            <strong>১.২ কার্যালয়:</strong> সংগঠনের প্রধান কার্যালয় আবেদা-নূর ফাযিল মাদ্রাসা প্রাঙ্গণ (গল্লাই, চান্দিনা, কুমিল্লা, EIIN: 105374)-এ অবস্থিত হবে। প্রয়োজনে ঢাকা বা কুমিল্লা শহরে লিয়াজোঁ অফিস রাখা যাবে।
+          </p>
+        </div>
+
+        <div class="mono-card p-6 rounded-2xl">
+          <h3 class="font-bold text-base sm:text-lg text-zinc-950 mb-1">ধারা ২: সংগঠনের প্রকৃতি (Nature of Organization)</h3>
+          <p class="text-sm text-zinc-600 leading-relaxed">
+            এটি একটি সম্পূর্ণ অরাজনৈতিক, অলাভজনক, শিক্ষাবান্ধব ও সমাজকল্যাণমূলক প্রাক্তন শিক্ষার্থীদের সংগঠন। সংগঠনের কোনো কার্যক্রমে দলীয় রাজনৈতিক প্রভাব বিস্তার করা যাবে না।
+          </p>
+        </div>
+
+        <div class="mono-card p-6 rounded-2xl">
+          <h3 class="font-bold text-base sm:text-lg text-zinc-950 mb-1">ধারা ৩: লক্ষ্য ও উদ্দেশ্য (Aims & Objectives)</h3>
+          <ul class="text-sm text-zinc-600 space-y-1 leading-relaxed">
+            <li><strong>৩.১</strong> মাদ্রাসার প্রাক্তন শিক্ষার্থীদের মধ্যে পারস্পরিক সৌহার্দ্য, ভ্রাতৃত্ব ও যোগাযোগের একটি স্থায়ী প্ল্যাটফর্ম তৈরি করা।</li>
+            <li><strong>৩.২</strong> একটি আধুনিক ও তথ্যসমৃদ্ধ “অ্যালামনাই ডাটাবেজ ও ডিরেক্টরি” সংরক্ষণ করা।</li>
+            <li><strong>৩.৩</strong> মাদ্রাসার বর্তমান মেধাবী ও দরিদ্র শিক্ষার্থীদের জন্য শিক্ষাবৃত্তি, ক্যারিয়ার গাইডলাইন ও উচ্চশিক্ষায় সহায়তা প্রদান করা।</li>
+            <li><strong>৩.৪</strong> প্রাক্তন ও বর্তমান শিক্ষক-শিক্ষিকা এবং শিক্ষার্থীদের বিপদে-আপদে (চিকিৎসা সহায়তা, জরুরি রক্তদান ইত্যাদি) পাশে দাঁড়ানো।</li>
+            <li><strong>৩.৫</strong> বার্ষিক পুনর্মিলনী (Reunion), ইফতার মাহফিল, সীরাতুন্নবী (সা.) সেমিনার এবং শিক্ষামূলক কর্মশালার আয়োজন করা।</li>
+          </ul>
+        </div>
+
+        <div class="mono-card p-6 rounded-2xl">
+          <h3 class="font-bold text-base sm:text-lg text-zinc-950 mb-1">ধারা ৪: সদস্যপদ ও যোগ্যতা (Membership & Eligibility)</h3>
+          <p class="text-sm text-zinc-600 leading-relaxed">
+            <strong>৪.১ সাধারণ সদস্য:</strong> আবেদা-নূর ফাযিল মাদ্রাসা হতে ইবতেদায়ী, দাখিল, আলিম বা ফাযিল পর্যায়ে উত্তীর্ণ অথবা ন্যূনতম দুই বছর অধ্যয়নকৃত যেকোনো প্রাক্তন শিক্ষার্থী সাধারণ সদস্য হতে পারবেন।<br/>
+            <strong>৪.২ আজীবন সদস্য:</strong> নির্ধারিত এককালীন অনুদান প্রদানের মাধ্যমে যোগ্য প্রাক্তন শিক্ষার্থী আজীবন সদস্য হতে পারবেন।<br/>
+            <strong>৪.৩ সম্মানিত সদস্য:</strong> মাদ্রাসার বর্তমান ও প্রাক্তন অধ্যক্ষ এবং শিক্ষকবৃন্দ পদাধিকারবলে সম্মানিত সদস্য হিসেবে গণ্য হবেন।
+          </p>
+        </div>
+
+        <div class="mono-card p-6 rounded-2xl">
+          <h3 class="font-bold text-base sm:text-lg text-zinc-950 mb-1">ধারা ৫, ৬ ও ৭: কমিটি, তহবিল, ব্যাংক হিসাব ও সংশোধন</h3>
+          <p class="text-sm text-zinc-600 leading-relaxed">
+            <strong>ধারা ৫ (কাঠামো):</strong> উপদেষ্টা পরিষদ, ২ বছর মেয়াদী কার্যনির্বাহী কমিটি এবং সাধারণ পরিষদের সমন্বয়ে সংগঠন পরিচালিত হবে।<br/>
+            <strong>ধারা ৬ (আর্থিক ব্যবস্থাপনা):</strong> সংগঠনের নামে যেকোনো তফসিলি ইসলামী ব্যাংকে যৌথ হিসাব থাকবে। সভাপতি, সাধারণ সম্পাদক ও অর্থ সম্পাদক—এই তিনজনের মধ্যে যেকোনো দুইজনের (অর্থ সম্পাদকসহ) যৌথ স্বাক্ষরে হিসাব পরিচালিত হবে এবং প্রতি অর্থবছর শেষে ওয়েবসাইটে অডিট প্রকাশিত হবে।<br/>
+            <strong>ধারা ৭ (নির্বাচন ও সংশোধন):</strong> প্রতি ২ বছর অন্তর বার্ষিক সাধারণ সভায় (AGM) নতুন কমিটি গঠিত হবে এবং উপস্থিত দুই-তৃতীয়াংশ (২/৩) সদস্যের সম্মতিক্রমে গঠনতন্ত্র সংশোধন করা যাবে।
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-zinc-950 text-zinc-400 py-12 px-4 text-sm">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+      <div>
+        <div class="text-white font-bold text-base mb-2">Abeda Noor Fazil Madrasah Alumni Association</div>
+        <p class="text-xs text-zinc-400 leading-relaxed">
+          আবেদা-নূর ফাযিল মাদ্রাসা প্রাঙ্গণ, গল্লাই, চান্দিনা, কুমিল্লা।<br/>
+          EIIN: 105374 | Institute Code: 18230
+        </p>
+      </div>
+      <div>
+        <div class="text-white font-semibold text-xs uppercase tracking-wider mb-2">Quick Links & References</div>
+        <ul class="text-xs space-y-1.5">
+          <li><a href="https://abedanoorfazilmadrasah.com/teacherscat/general/" target="_blank" class="hover:text-white">Official Madrasah Teachers Directory &nearr;</a></li>
+          <li><a href="#directory" class="hover:text-white">Alumni Story & Search Directory</a></li>
+          <li><a href="#excel-sync" class="hover:text-white">Excel (.xlsx) Database Manager</a></li>
+          <li><a href="#gotontontra" class="hover:text-white">Full Gotontontra (গঠনতন্ত্র)</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="text-white font-semibold text-xs uppercase tracking-wider mb-2">Official Contact & Social</div>
+        <p class="text-xs text-zinc-400 leading-relaxed">
+          Alumni Email: <a href="mailto:anfmalumnia@gmail.com" class="text-white underline">anfmalumnia@gmail.com</a><br/>
+          Madrasah Email: abedanoorfazilmadrasha@gmail.com<br/>
+          Phone: 01309-105374
+        </p>
+      </div>
+    </div>
+    <div class="max-w-6xl mx-auto pt-6 border-t border-zinc-800 flex flex-col sm:flex-row justify-between items-center text-xs text-zinc-500">
+      <span>&copy; ANFMAA — Rooted in Values, Connected for Life.</span>
+      <span>5-Tier Monochrome Black, White & Shadow Architecture</span>
+    </div>
+  </footer>
+
+  <!-- ALUMNI STORY DETAIL MODAL -->
+  <div id="storyModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white border border-zinc-300 rounded-2xl max-w-xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <button onclick="closeStoryModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-100 hover:bg-black hover:text-white flex items-center justify-center text-lg transition">&times;</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- EXPANDED REGISTRATION FORM MODAL (ALL BD STANDARD FIELDS) -->
+  <div id="regModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white border border-zinc-300 rounded-2xl max-w-3xl w-full p-6 shadow-2xl max-h-[92vh] overflow-y-auto relative">
+      <button onclick="closeRegModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-100 hover:bg-black hover:text-white flex items-center justify-center text-lg transition">&times;</button>
+      <h3 class="text-xl font-bold text-zinc-950">Join ANFMAA Alumni Story & Database</h3>
+      <p class="text-xs text-zinc-500 mb-5">Complete all standard academic, professional, verification, and privacy fields below.</p>
+
+      <form id="alumniForm" onsubmit="submitAlumniForm(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-sm">
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Full Name (English & বাংলা) *</label>
+          <input id="f_name" required class="w-full border border-zinc-300 p-2.5 rounded-lg" placeholder="e.g. Md. Tanvir Hossain (মোঃ তানভীর)" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Profile Picture URL (Optional)</label>
+          <input id="f_photo" class="w-full border border-zinc-300 p-2.5 rounded-lg" placeholder="Paste Google Drive / Facebook photo URL" />
+        </div>
+
+        <!-- Levels Studied Checkboxes -->
+        <div class="sm:col-span-2 bg-zinc-50 p-3 rounded-lg border border-zinc-200">
+          <label class="block text-xs font-semibold text-zinc-700 mb-1.5">Levels Studied at Abeda Noor Fazil Madrasah *</label>
+          <div class="flex flex-wrap gap-4 text-xs">
+            <label class="flex items-center gap-1.5"><input type="checkbox" name="lvl" value="Ebtedayee" /> Ebtedayee</label>
+            <label class="flex items-center gap-1.5"><input type="checkbox" name="lvl" value="Dakhil" checked /> Dakhil (Secondary)</label>
+            <label class="flex items-center gap-1.5"><input type="checkbox" name="lvl" value="Alim" checked /> Alim (Higher Secondary)</label>
+            <label class="flex items-center gap-1.5"><input type="checkbox" name="lvl" value="Fazil" /> Fazil</label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Dakhil Passing Year *</label>
+          <input id="f_dakhil" required class="w-full border border-zinc-300 p-2.5 rounded-lg" placeholder="e.g. 2012 (or N/A)" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Alim Passing Year *</label>
+          <input id="f_alim" required class="w-full border border-zinc-300 p-2.5 rounded-lg" placeholder="e.g. 2014 (or N/A)" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Fazil Passing Year</label>
+          <input id="f_fazil" class="w-full border border-zinc-300 p-2.5 rounded-lg" placeholder="e.g. 2017 (or N/A)" value="N/A" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Department / Group *</label>
+          <select id="f_stream" class="w-full border border-zinc-300 p-2.5 rounded-lg">
+            <option value="General">General (Science / Humanities)</option>
+            <option value="Arabic">Arabic / Muzabbid</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Last Roll No. or Favorite Teacher (For Verification) *</label>
+          <input id="f_verify" required class="w-full border border-zinc-300 p-2.5 rounded-lg" placeholder="e.g. Roll 05 / Principal Sir" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Highest Degree & University / Kamil Madrasah *</label>
+          <input id="f_degree" required class="w-full border border-zinc-300 p-2.5 rounded-lg" placeholder="e.g. B.Sc. (DU) / Kamil (IAU)" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Current Position / Designation *</label>
+          <input id="f_position" required class="w-full border border-zinc-300 p-2.5 rounded-lg" placeholder="e.g. Senior Software Engineer" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Organization / Workplace Name *</label>
+          <input id="f_org" required class="w-full border border-zinc-300 p-2.5 rounded-lg" placeholder="e.g. Islami Bank / Ministry / Tech Co." />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Expert Area (দক্ষতার ক্ষেত্র) *</label>
+          <input id="f_expert" required class="w-full border border-zinc-300 p-2.5 rounded-lg" placeholder="e.g. Web Dev, Banking, Hadith, Medicine" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Current District & Country *</label>
+          <input id="f_location" required class="w-full border border-zinc-300 p-2.5 rounded-lg" placeholder="e.g. Dhaka, Bangladesh (or Dubai, UAE)" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Blood Group & Donor Status *</label>
+          <div class="grid grid-cols-2 gap-2">
+            <select id="f_blood" class="border border-zinc-300 p-2.5 rounded-lg">
+              <option value="O+">O+</option><option value="A+">A+</option><option value="B+">B+</option><option value="AB+">AB+</option>
+              <option value="O-">O-</option><option value="A-">A-</option><option value="B-">B-</option><option value="AB-">AB-</option>
+            </select>
+            <select id="f_donate" class="border border-zinc-300 p-2.5 rounded-lg">
+              <option value="Yes">Ready to Donate</option>
+              <option value="No">Unavailable</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Phone Number Privacy Toggle *</label>
+          <select id="f_privacy" class="w-full border border-zinc-300 p-2.5 rounded-lg">
+            <option value="Public">Show Phone Publicly</option>
+            <option value="Verified Alumni Only">Show Only to Verified Alumni</option>
+            <option value="Hide Phone (Email Only)">Hide Phone (Contact via Email Only)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Phone / WhatsApp Number *</label>
+          <input id="f_phone" required class="w-full border border-zinc-300 p-2.5 rounded-lg" placeholder="+880 1XXX-XXXXXX" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Email Address *</label>
+          <input id="f_email" type="email" required class="w-full border border-zinc-300 p-2.5 rounded-lg" placeholder="name@example.com" />
+        </div>
+
+        <!-- Support Checkboxes -->
+        <div class="sm:col-span-2 bg-zinc-50 p-3 rounded-lg border border-zinc-200">
+          <label class="block text-xs font-semibold text-zinc-700 mb-1.5">How Can You Help Junior Students?</label>
+          <div class="flex flex-wrap gap-4 text-xs">
+            <label class="flex items-center gap-1.5"><input type="checkbox" name="help" value="Career Counseling / Mentorship" checked /> Career Counseling / Mentorship</label>
+            <label class="flex items-center gap-1.5"><input type="checkbox" name="help" value="Job / Internship Referral" /> Job / Internship Referral</label>
+            <label class="flex items-center gap-1.5"><input type="checkbox" name="help" value="Scholarship / Zakat / Welfare" /> Scholarship / Zakat / Welfare Contribution</label>
+          </div>
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-zinc-700 mb-1">Your Madrasah Memory / Advice to Juniors (Alumni Story) *</label>
+          <textarea id="f_story" required rows="3" class="w-full border border-zinc-300 p-2.5 rounded-lg" placeholder="Share your favorite memory at Abeda Noor Fazil Madrasah and advice for current students..."></textarea>
+        </div>
+
+        <div class="sm:col-span-2 pt-2">
+          <button type="submit" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-3 rounded-xl font-semibold shadow-lg transition">
+            Submit Profile to ANFMAA Database
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Google Apps Script Web App URL (Paste your deployed Apps Script URL here when ready)
+    const GOOGLE_SHEETS_WEBAPP_URL = "";
+
+    const initialAlumni = [
+      {
+        id: "ANFM-001", name: "Md. Tanvir Hossain (মোঃ তানভীর হোসেন)", photo: "",
+        levels: "Dakhil, Alim", dakhil: "2012", alim: "2014", fazil: "N/A", stream: "General",
+        verify: "Roll 04 / Noor Sir", degree: "B.Sc. in CSE, DUET",
+        position: "Senior Software Engineer", org: "Pathao Ltd., Dhaka", expert: "Full-Stack Web, Cloud & AI",
+        location: "Dhaka, Bangladesh", blood: "O+", donate: "Yes",
+        help: "Career Counseling, Job/Internship Referral",
+        phone: "+880 1711-000111", privacy: "Public", email: "tanvir.anfm@example.com",
+        story: "Our ICT and Mathematics classes at Abeda Noor Fazil Madrasah built the foundation of my engineering career. Available to mentor junior students in programming."
+      },
+      {
+        id: "ANFM-002", name: "Mawlana Mahmudul Hasan (মাওলানা মাহমুদুল হাসান)", photo: "",
+        levels: "Ebtedayee, Dakhil, Alim, Fazil", dakhil: "2008", alim: "2010", fazil: "2013", stream: "Arabic",
+        verify: "Roll 01 / Principal Sir", degree: "Kamil (Hadith), Islamic Arabic University",
+        position: "Assistant Professor (Islamic Studies)", org: "Govt. Madrasah-e-Alia", expert: "Hadith, Fiqh & Arabic Literature",
+        location: "Cumilla, Bangladesh", blood: "B+", donate: "Yes",
+        help: "Career Counseling, Scholarship/Welfare",
+        phone: "+880 1812-000222", privacy: "Public", email: "mahmud.anfm@example.com",
+        story: "The spiritual and moral discipline taught in Gallai shaped my life. Proud to represent our Madrasah in higher education."
+      },
+      {
+        id: "ANFM-003", name: "Dr. Farzana Akter (ডাঃ ফারজানা আক্তার)", photo: "",
+        levels: "Dakhil, Alim", dakhil: "2013", alim: "2015", fazil: "N/A", stream: "General",
+        verify: "Roll 02 / Science Dept", degree: "MBBS, Cumilla Medical College",
+        position: "Medical Officer", org: "Cumilla Medical Center", expert: "Public Health & Pediatrics",
+        location: "Cumilla, Bangladesh", blood: "A+", donate: "Yes",
+        help: "Career Counseling, Medical Camp Support",
+        phone: "+880 1913-000333", privacy: "Verified Alumni Only", email: "farzana.med@example.com",
+        story: "Our science teachers encouraged me at every step. Happy to offer free tele-health guidance for Madrasah teachers and students."
+      },
+      {
+        id: "ANFM-004", name: "Md. Zahidul Islam (মোঃ জাহিদুল ইসলাম)", photo: "",
+        levels: "Dakhil, Alim", dakhil: "2010", alim: "2012", fazil: "N/A", stream: "General",
+        verify: "Roll 07 / Accounting Sir", degree: "BBA & MBA (Finance), University of Chittagong",
+        position: "Senior Principal Officer", org: "Islami Bank Bangladesh PLC", expert: "Islamic Banking, Finance & Audit",
+        location: "Chattogram, Bangladesh", blood: "AB+", donate: "Yes",
+        help: "Scholarship/Welfare, Job/Internship Referral",
+        phone: "+880 1614-000444", privacy: "Public", email: "zahid.bank@example.com",
+        story: "Proud to be part of Abeda Noor Fazil Madrasah. Looking forward to supporting our scholarship fund and career workshops for fresh graduates."
+      },
+      {
+        id: "ANFM-005", name: "Engr. Kamrul Hasan (ইঞ্জিনিয়ার কামরুল হাসান)", photo: "",
+        levels: "Dakhil", dakhil: "2006", alim: "N/A", fazil: "N/A", stream: "General",
+        verify: "Roll 05 / Math Teacher", degree: "M.Sc. Civil Engineering, UK",
+        position: "Structural Project Manager", org: "Al-Futtaim Engineering", expert: "Civil Infrastructure & Project Mgmt",
+        location: "Dubai, United Arab Emirates", blood: "O-", donate: "No",
+        help: "Scholarship/Welfare, Overseas Guidance",
+        phone: "+971 50-0005555", privacy: "Verified Alumni Only", email: "kamrul.uae@example.com",
+        story: "Even from abroad, my heart remains in Gallai. Ready to support deserving students from our Madrasah with annual scholarships."
+      },
+      {
+        id: "ANFM-006", name: "Nusrat Jahan (নুসরাত জাহান)", photo: "",
+        levels: "Dakhil, Alim", dakhil: "2016", alim: "2018", fazil: "N/A", stream: "General",
+        verify: "Roll 03 / English Teacher", degree: "B.A. (Hons), M.A. in English, Victoria College",
+        position: "Lecturer in English", org: "Chandina Model College", expert: "ELT, Academic Writing & Research",
+        location: "Cumilla, Bangladesh", blood: "B-", donate: "Yes",
+        help: "Career Counseling",
+        phone: "+880 1516-000666", privacy: "Hide Phone (Email Only)", email: "nusrat.elt@example.com",
+        story: "Abeda Noor Fazil Madrasah taught us confidence and values. I regularly conduct English spoken and writing sessions for rural students."
+      }
+    ];
+
+    const galleryItems = [
+      { category: "Campus", title: "Abeda Noor Fazil Madrasah Main Campus", subtitle: "Gallai, Chandina, Cumilla (EIIN: 105374)", year: "Archive" },
+      { category: "Teachers", title: "Honoring Our Revered Teachers", subtitle: "Arabic & General Department Faculty", year: "Legacy" },
+      { category: "Reunion", title: "Annual Alumni Gathering & Doa Mahfil", subtitle: "Connecting Generations from Ebtedayee to Fazil", year: "Reunion" }
+    ];
+
+    let alumniList = JSON.parse(localStorage.getItem('anfmaa_full_db')) || initialAlumni;
+    let onlyReadyBlood = false;
+
+    function getInitials(name) {
+      return name.replace(/[^a-zA-Z\s]/g, '').trim().split(/\s+/).map(n => n[0]).join('').slice(0, 2).toUpperCase() || "AN";
+    }
+
+    function formatPhoneDisplay(a) {
+      if (a.privacy === "Public") return a.phone;
+      if (a.privacy === "Verified Alumni Only") return "🔒 Verified Alumni Only";
+      return "🔒 Hidden (Contact via Email)";
+    }
+
+    function renderAlumni(list) {
+      const grid = document.getElementById('alumniGrid');
+      if (!list.length) {
+        grid.innerHTML = `<div class="col-span-full text-center py-12 text-zinc-500 mono-card rounded-2xl">No matching alumni records found. Click "Reset Filters" to view all.</div>`;
+        return;
+      }
+      grid.innerHTML = list.map((a, idx) => `
+        <div onclick="openStoryModal(${idx})" class="mono-card rounded-2xl p-5 cursor-pointer flex flex-col justify-between">
+          <div>
+            <div class="flex items-start gap-3.5 mb-3">
+              ${a.photo
+                ? `<img src="${a.photo}" alt="${a.name}" class="w-14 h-14 rounded-full object-cover border border-zinc-300 bw-media shrink-0" />`
+                : `<div class="w-14 h-14 rounded-full bg-zinc-950 text-white flex items-center justify-center font-bold text-base shrink-0 shadow">${getInitials(a.name)}</div>`
+              }
+              <div>
+                <h3 class="font-bold text-base text-zinc-950 leading-snug">${a.name}</h3>
+                <p class="text-xs font-medium text-zinc-700 mt-0.5">${a.position}</p>
+                <p class="text-[11px] text-zinc-500">${a.org} &bull; ${a.location}</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5 mb-3 text-[11px]">
+              <span class="px-2 py-0.5 bg-zinc-950 text-white rounded font-medium">Dakhil '${String(a.dakhil).slice(-2)}</span>
+              <span class="px-2 py-0.5 bg-zinc-200 text-zinc-900 rounded font-medium">Alim '${String(a.alim).slice(-2)}</span>
+              <span class="px-2 py-0.5 border border-zinc-300 text-zinc-700 rounded">${a.stream}</span>
+              <span class="px-2 py-0.5 border border-zinc-400 text-zinc-950 rounded font-semibold">Blood: ${a.blood} ${a.donate === 'Yes' ? '✓' : ''}</span>
+            </div>
+
+            <p class="text-xs text-zinc-700 mb-1.5"><strong class="text-zinc-950">Expert Area:</strong> ${a.expert}</p>
+            <p class="text-xs text-zinc-600 italic line-clamp-2">“${a.story}”</p>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-zinc-200 flex justify-between items-center text-xs font-semibold text-zinc-950">
+            <span>Read Full Story & Info</span>
+            <span>&rarr;</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openStoryModal(idx) {
+      const a = alumniList[idx];
+      document.getElementById('modalContent').innerHTML = `
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-16 h-16 rounded-full bg-zinc-950 text-white flex items-center justify-center font-bold text-xl shrink-0">${getInitials(a.name)}</div>
+          <div>
+            <div class="text-xs uppercase tracking-wider text-zinc-500 font-semibold">${a.levels} (${a.stream} Stream)</div>
+            <h3 class="text-xl sm:text-2xl font-bold text-zinc-950">${a.name}</h3>
+            <p class="text-sm text-zinc-700 font-medium">${a.position} — ${a.org}</p>
+          </div>
+        </div>
+
+        <div class="p-4 bg-zinc-100 border border-zinc-200 rounded-xl text-sm italic text-zinc-800 mb-4 leading-relaxed">
+          “${a.story}”
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs border-t border-zinc-200 pt-4">
+          <div class="p-2.5 bg-zinc-50 rounded-lg border border-zinc-200"><span class="text-zinc-500 block">Dakhil / Alim / Fazil</span><strong>${a.dakhil} / ${a.alim} / ${a.fazil || 'N/A'}</strong></div>
+          <div class="p-2.5 bg-zinc-50 rounded-lg border border-zinc-200"><span class="text-zinc-500 block">Highest Degree</span><strong>${a.degree || 'Verified Alumnus'}</strong></div>
+          <div class="p-2.5 bg-zinc-50 rounded-lg border border-zinc-200"><span class="text-zinc-500 block">Expert Area</span><strong>${a.expert}</strong></div>
+          <div class="p-2.5 bg-zinc-50 rounded-lg border border-zinc-200"><span class="text-zinc-500 block">Blood Group & Donor Status</span><strong>${a.blood} (Ready: ${a.donate})</strong></div>
+          <div class="p-2.5 bg-zinc-50 rounded-lg border border-zinc-200"><span class="text-zinc-500 block">Current Location</span><strong>${a.location}</strong></div>
+          <div class="p-2.5 bg-zinc-50 rounded-lg border border-zinc-200"><span class="text-zinc-500 block">Support for Juniors</span><strong>${a.help}</strong></div>
+          <div class="p-2.5 bg-zinc-50 rounded-lg border border-zinc-200"><span class="text-zinc-500 block">Phone (${a.privacy})</span><strong>${formatPhoneDisplay(a)}</strong></div>
+          <div class="p-2.5 bg-zinc-50 rounded-lg border border-zinc-200"><span class="text-zinc-500 block">Email Address</span><strong>${a.email}</strong></div>
+        </div>
+      `;
+      document.getElementById('storyModal').classList.remove('hidden');
+    }
+
+    function closeStoryModal() { document.getElementById('storyModal').classList.add('hidden'); }
+    function openRegModal() { document.getElementById('regModal').classList.remove('hidden'); }
+    function closeRegModal() { document.getElementById('regModal').classList.add('hidden'); }
+
+    function filterAlumni() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const dk = document.getElementById('dakhilFilter').value;
+      const d = document.getElementById('deptFilter').value;
+      const b = document.getElementById('bloodFilter').value;
+
+      const filtered = alumniList.filter(a =>
+        (!dk || String(a.dakhil) === dk) &&
+        (!d || a.stream === d) &&
+        (!b || a.blood === b) &&
+        (!onlyReadyBlood || a.donate === "Yes") &&
+        (a.name.toLowerCase().includes(q) ||
+         a.expert.toLowerCase().includes(q) ||
+         a.position.toLowerCase().includes(q) ||
+         (a.org && a.org.toLowerCase().includes(q)) ||
+         (a.location && a.location.toLowerCase().includes(q)) ||
+         String(a.dakhil).includes(q) ||
+         String(a.alim).includes(q))
+      );
+      renderAlumni(filtered);
+    }
+
+    function filterEmergencyBlood() {
+      onlyReadyBlood = !onlyReadyBlood;
+      const btn = document.getElementById('bloodBtn');
+      btn.classList.toggle('pill-active', onlyReadyBlood);
+      filterAlumni();
+    }
+
+    function resetFilters() {
+      document.getElementById('searchInput').value = "";
+      document.getElementById('dakhilFilter').value = "";
+      document.getElementById('deptFilter').value = "";
+      document.getElementById('bloodFilter').value = "";
+      onlyReadyBlood = false;
+      document.getElementById('bloodBtn').classList.remove('pill-active');
+      renderAlumni(alumniList);
+    }
+
+    function renderGallery(cat) {
+      const grid = document.getElementById('galleryGrid');
+      const items = cat === 'All' ? galleryItems : galleryItems.filter(g => g.category === cat);
+      grid.innerHTML = items.map(g => `
+        <div class="mono-card rounded-2xl overflow-hidden slide-frame">
+          <div class="h-44 bg-gradient-to-br from-zinc-900 via-zinc-700 to-zinc-950 text-white flex flex-col items-center justify-center p-6 text-center bw-media">
+            <span class="text-[10px] uppercase tracking-widest px-2.5 py-0.5 border border-zinc-400 rounded-full mb-2">${g.category}</span>
+            <div class="font-bold text-lg">${g.title}</div>
+          </div>
+          <div class="p-4 bg-white flex justify-between items-center text-xs">
+            <span class="text-zinc-600">${g.subtitle}</span>
+            <span class="font-semibold text-zinc-900">${g.year}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterGallery(cat) {
+      document.querySelectorAll('.gal-btn').forEach(btn => {
+        btn.classList.toggle('pill-active', btn.textContent.includes(cat) || (cat === 'All' && btn.textContent.includes('All')));
+      });
+      renderGallery(cat);
+    }
+
+    function submitAlumniForm(e) {
+      e.preventDefault();
+      const lvls = Array.from(document.querySelectorAll('input[name="lvl"]:checked')).map(el => el.value).join(', ') || 'Dakhil';
+      const helps = Array.from(document.querySelectorAll('input[name="help"]:checked')).map(el => el.value).join(', ') || 'General Networking';
+
+      const newEntry = {
+        id: "ANFM-" + String(alumniList.length + 1).padStart(3, '0'),
+        name: document.getElementById('f_name').value,
+        photo: document.getElementById('f_photo').value,
+        levels: lvls,
+        dakhil: document.getElementById('f_dakhil').value,
+        alim: document.getElementById('f_alim').value,
+        fazil: document.getElementById('f_fazil').value,
+        stream: document.getElementById('f_stream').value,
+        verify: document.getElementById('f_verify').value,
+        degree: document.getElementById('f_degree').value,
+        position: document.getElementById('f_position').value,
+        org: document.getElementById('f_org').value,
+        expert: document.getElementById('f_expert').value,
+        location: document.getElementById('f_location').value,
+        blood: document.getElementById('f_blood').value,
+        donate: document.getElementById('f_donate').value,
+        privacy: document.getElementById('f_privacy').value,
+        phone: document.getElementById('f_phone').value,
+        email: document.getElementById('f_email').value,
+        help: helps,
+        story: document.getElementById('f_story').value
+      };
+
+      alumniList.unshift(newEntry);
+      localStorage.setItem('anfmaa_full_db', JSON.stringify(alumniList));
+      renderAlumni(alumniList);
+
+      if (GOOGLE_SHEETS_WEBAPP_URL) {
+        fetch(GOOGLE_SHEETS_WEBAPP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(newEntry) });
+      }
+
+      document.getElementById('alumniForm').reset();
+      closeRegModal();
+    }
+
+    // Excel (.xlsx / .csv) Upload Handler via SheetJS
+    function handleExcelUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(firstSheet);
+
+        if (rows.length) {
+          const imported = rows.map((r, i) => ({
+            id: r["Alumni ID"] || ("ANFM-" + (i + 1)),
+            name: r["Full Name (English & বাংলা)"] || r["Name"] || "Alumnus",
+            photo: r["Photo URL"] || "",
+            levels: r["Levels Studied at ANFM"] || "Dakhil, Alim",
+            dakhil: String(r["Dakhil Year"] || r["Dakhil"] || "N/A"),
+            alim: String(r["Alim Year"] || r["Alim"] || "N/A"),
+            fazil: String(r["Fazil Year"] || "N/A"),
+            stream: r["Department / Stream"] || r["Stream"] || "General",
+            verify: r["Verification (Roll / Fav Teacher)"] || "Verified",
+            degree: r["Highest Degree & Institution"] || "",
+            position: r["Current Position"] || r["Position"] || "",
+            org: r["Organization / Workplace"] || "",
+            expert: r["Expert Area"] || "",
+            location: (r["Current District"] ? r["Current District"] + ", " + (r["Country"] || "Bangladesh") : "Bangladesh"),
+            blood: r["Blood Group"] || "O+",
+            donate: r["Ready to Donate?"] || "Yes",
+            help: r["Support Areas for Juniors"] || "Career Counseling",
+            phone: r["Phone / WhatsApp"] || r["Phone"] || "",
+            privacy: r["Phone Privacy"] || "Public",
+            email: r["Email Address"] || r["Email"] || "",
+            story: r["Alumni Story / Madrasah Memory"] || r["Story"] || ""
+          }));
+          alumniList = imported;
+          localStorage.setItem('anfmaa_full_db', JSON.stringify(alumniList));
+          renderAlumni(alumniList);
+          const st = document.getElementById('excelStatus');
+          st.textContent = `✓ Successfully loaded ${imported.length} alumni profiles from ${file.name}!`;
+          st.classList.remove('hidden');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Export current directory to Excel (.xlsx)
+    function exportToExcel() {
+      const ws = XLSX.utils.json_to_sheet(alumniList);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Alumni_Database");
+      XLSX.writeFile(wb, "ANFMAA_Alumni_Database_Export.xlsx");
+    }
+
+    renderAlumni(alumniList);
+    renderGallery('All');
+  </script>
 </body>
 </html>
