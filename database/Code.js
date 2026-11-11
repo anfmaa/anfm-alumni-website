@@ -27,7 +27,7 @@ function publicMember(m){return {memberType:m.memberType||'alumni',interests:m.i
 function live(p){return p.status==='approved' && (!p.deadline || Date.parse(p.deadline)>Date.now());}
 function publicPost(p){var q={};['id','type','title','body','authorName','location','blood','units','deadline','paymentInfo','target','contact','featured','updatedAt','imageUrl','imageSource','imageCredit'].forEach(function(k){q[k]=p[k];});return q;}
 function dispatch(action,d,actor){
-  if(action==='public')return {members:rows('Members').filter(function(m){return m.status==='approved';}).map(publicMember),posts:rows('Posts').filter(live).map(publicPost)};
+  if(action==='public')return {members:rows('Members').filter(function(m){return m.status==='approved' && m.memberType!=='student';}).map(publicMember),posts:rows('Posts').filter(live).map(publicPost)};
   if(action==='legacySearch')return searchLegacy(d);
   requireValue(actor && actor.id && actor.email,'Sign in required');
   var r=role(actor), staff=r==='admin'||r==='moderator', members=rows('Members'), me=members.find(function(m){return m.id===actor.id;});
@@ -38,8 +38,11 @@ function dispatch(action,d,actor){
     requireValue(text(d.name),'Name is required'); requireValue(text(d.batch),d.memberType==='student'?'Current class is required':'Dakhil batch is required');requireValue(text(d.verification),'Provide alumni verification details');requireValue(d.consent===true,'Consent is required');
     requireValue(!d.claimSelected || linked,'Verify the selected record before completing registration');
     ['dakhilBatch','alimBatch','fazilBatch'].forEach(function(k){requireValue(!text(d[k]) || /^(199[3-9]|20[01][0-9]|202[0-6])$/.test(text(d[k])),'Select a year from 1993 to 2026');});
-    if(d.memberType!=='student')requireValue(/^(199[3-9]|20[01][0-9]|202[0-6])$/.test(text(d.batch)),'Select a Dakhil year from 1993 to 2026');
-    var m={currentClass:d.memberType==='student'?text(d.currentClass||d.batch,40):'',dakhilBatch:text(d.dakhilBatch||(d.memberType==='student'?'':d.batch),20),currentPosition:text(d.currentPosition),institution:text(d.institution),memberType:d.memberType==='student'?'student':'alumni',interests:text(d.interests,300),mentoring:d.mentoring===true,id:actor.id,email:actor.email,name:text(d.name),batch:text(d.batch,20),stream:text(d.stream,50),profession:text(d.profession),location:text(d.location),bio:text(d.bio,2000),phone:text(d.phone,60),blood:text(d.blood,5),donor:d.donor===true,publicContact:d.publicContact===true,verification:text(d.verification,500),legacyId:linked?linked.id:(me?me.legacyId||'':''),claimKey:text(d.claimKey,80),claimBatch:text(d.claimBatch,20),father:text(d.father),permanentAddress:text(d.permanentAddress,500),alimBatch:text(d.alimBatch,20),fazilBatch:text(d.fazilBatch,20),status:'pending',role:me?me.role || 'member':'member',featured:false,updatedAt:now(),version:(me?me.version || 0:0)+1};
+    if(!['student','former'].includes(d.memberType))requireValue(/^(199[3-9]|20[01][0-9]|202[0-6])$/.test(text(d.batch)),'Select a Dakhil year from 1993 to 2026');
+    requireValue(!me || text(d.name)===me.name,'Your name is locked. Contact the administrator for a correction.');
+    requireValue(!linked || me || text(d.name)===linked.name,'Use the verified record name. Contact the administrator for a correction.');
+    if(['student','former'].includes(d.memberType)){requireValue(text(d.currentClass),'Select your class');requireValue(/^(199[3-9]|20[01][0-9]|202[0-6])$/.test(text(d.attendanceYear)),'Select an attendance year from 1993 to 2026');}
+    var m={attendanceYear:text(d.attendanceYear,20),currentClass:['student','former'].includes(d.memberType)?text(d.currentClass||d.batch,40):'',dakhilBatch:text(d.dakhilBatch||(['student','former'].includes(d.memberType)?'':d.batch),20),currentPosition:text(d.currentPosition),institution:text(d.institution),memberType:['student','former'].includes(d.memberType)?d.memberType:'alumni',interests:text(d.interests,300),mentoring:d.mentoring===true,id:actor.id,email:actor.email,name:text(d.name),batch:text(d.batch,20),stream:text(d.stream,50),profession:text(d.profession),location:text(d.location),bio:text(d.bio,2000),phone:text(d.phone,60),blood:text(d.blood,5),donor:d.donor===true,publicContact:d.publicContact===true,verification:text(d.verification,500),legacyId:linked?linked.id:(me?me.legacyId||'':''),claimKey:text(d.claimKey,80),claimBatch:text(d.claimBatch,20),father:text(d.father),permanentAddress:text(d.permanentAddress,500),alimBatch:text(d.alimBatch,20),fazilBatch:text(d.fazilBatch,20),status:'pending',role:me?me.role || 'member':'member',featured:false,updatedAt:now(),version:(me?me.version || 0:0)+1};
     if(m.donor)requireValue(['A+','A-','B+','B-','O+','O-','AB+','AB-'].indexOf(m.blood)>=0,'Select a blood group');
     put('Members',m);audit(actor,'profile.submit',m.id);return {ok:true};
   }
@@ -127,10 +130,13 @@ function importLegacySource(){
 }
 
 function searchLegacy(d){
- var name=text(d.name).toLowerCase(),year=normalizeKey(text(d.year,20)),offset=Math.max(0,Math.floor(Number(d.offset)||0));
- var members=rows('Members');
- var found=rows('Legacy').filter(function(x){return (!name||String(x.name).toLowerCase().indexOf(name)>=0)&&(!year||normalizeKey(x.batch)===year);});
- return {items:found.slice(offset,offset+20).map(function(x){var m=members.find(function(m){return m.legacyId===x.id && m.status==='approved';});return {id:x.id,name:x.name,batch:x.batch,profile:m?publicMember(m):null};}),next:offset+20<found.length?offset+20:null};
+ var name=text(d.name).toLowerCase(),year=normalizeKey(text(d.year,20)),level=text(d.level)||'dakhil',offset=Math.max(0,Math.floor(Number(d.offset)||0));
+ var fields={dakhil:'batch',alim:'alimBatch',fazil:'fazilBatch'},members=rows('Members');
+ requireValue(fields[level] || /^Class (6|7|8|9|10)$/.test(level),'Select a supported degree or class');
+ function matches(x){var value=fields[level]?x[fields[level]]:x.attendanceYear;return (!name||String(x.name).toLowerCase().indexOf(name)>=0)&&(!year||normalizeKey(value)===year)&&(fields[level]?(!d.level||!!text(value)):x.currentClass===level);}
+ var found=rows('Legacy').filter(matches).map(function(x){var m=members.find(function(m){return m.legacyId===x.id;});return {id:x.id,name:x.name,batch:x.batch,education:level,year:fields[level]?x[fields[level]]:x.attendanceYear,claimed:!!x.owner,profile:m&&m.status==='approved'&&m.memberType!=='student'?publicMember(m):null};});
+ members.filter(function(m){return !m.legacyId && m.status==='approved' && m.memberType!=='student' && matches(m);}).forEach(function(m){found.push({id:m.id,name:m.name,batch:m.batch,education:level,year:fields[level]?m[fields[level]]:m.attendanceYear,claimed:true,profile:publicMember(m)});});
+ return {items:found.slice(offset,offset+20),next:offset+20<found.length?offset+20:null};
 }
 function notice(owner,message,reference){put('Notifications',{id:uid(),owner:owner,message:message,reference:reference,read:false,at:now()});}
 function memberActions(action,d,actor,r,me,linked){

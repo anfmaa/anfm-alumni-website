@@ -3,15 +3,16 @@ let chosenRecord=null;
 $('existingMember').onclick=()=>{$('legacySearchPanel').hidden=false;$('legacyName').focus();};
 $('newMember').onclick=()=>{chosenRecord=null;if(account)editProfile();else notify('Sign in below, then select Register / Edit my profile. Choose current student or alumni.');};
 async function findRecords(offset=0){
- const result=await api('legacySearch',{name:$('legacyName').value,year:$('legacyYear').value,offset});
+ const result=await api('legacySearch',{name:$('legacyName').value,year:$('legacyYear').value,level:$('legacyLevel').value,offset});
  const container=$('legacyResults');if(!offset)container.replaceChildren();
  container.querySelector('[data-next]')?.remove();
- for(const item of result.items){const c=node('article',undefined,'card');c.append(node('h3',item.name),node('p','Dakhil year: '+(item.batch||'Not recorded')));
+ for(const item of result.items){const c=node('article',undefined,'card');c.append(node('h3',item.name),node('p',(item.education||'Dakhil')+': '+(item.year||item.batch||'Not recorded')));
  if(item.profile){const m=item.profile;c.append(node('p',[m.profession,m.location,m.interests].filter(Boolean).join(' · ')),node('p',m.bio||''));if(m.phone)c.append(node('p',m.phone));if(m.blood)c.append(node('p','Volunteer donor: '+m.blood));}
- c.append(button('This is my profile / এটি আমার প্রোফাইল',()=>{chosenRecord=item;requestIdentity();}));container.append(c);}
+ c.append(button(item.claimed?'Already registered: sign in':'This is me: complete registration',()=>{if(item.claimed){chosenRecord=null;location.hash='account';$('googleSignIn').scrollIntoView({block:'center'});return notify('Sign in with the Google account linked to this record. For account recovery, contact the association administrator.');}chosenRecord=item;requestIdentity();}));container.append(c);}
  empty(container,'No match. Try another spelling, remove the year, or register as a new member.');
  if(result.next!==null){const more=button('More results',()=>findRecords(result.next));more.dataset.next='true';container.append(more);}
 }
+$('legacyLevel').onchange=()=>{$('legacyYearLabel').textContent=$('legacyLevel').value.startsWith('Class')?'Attendance year (optional)':'Passing year (optional)';};
 $('legacySearchForm').onsubmit=async e=>{e.preventDefault();try{await findRecords();}catch(err){notify(err.message);}};
 function requestIdentity(){if(!account)return notify('Profile selected. Sign in, then click Verify selected profile in your dashboard.');if(account.legacyRecord)return notify('Your account already has a verified original record. Complete registration.');
  form('Verify ownership: '+chosenRecord.name,area('evidence','Private verification: years studied, class/roll or teacher reference. Do not upload identity documents.', '',true,500),d=>api('claim',{id:chosenRecord.id,evidence:d.evidence}));
@@ -27,10 +28,10 @@ editProfile=function(){
  const yearSelect=(name,label,value)=>select(name,label,yearOptions,value||'');
  const classes=[['','Select current class'],...['Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Alim 1st year','Alim 2nd year','Fazil 1st year','Fazil 2nd year','Fazil 3rd year'].map(x=>[x,x])];
  form('Complete your member profile / নিবন্ধন সম্পূর্ণ করুন',
- '<p class="full">Your Google account supplies your name and verified email when available. We do not read your Gmail inbox. Fields marked * are required. Your changes stay in this form while you are signed in; submit to save them to your profile.</p>'+select('memberType','Member type *',[['alumni','Alumni / প্রাক্তন শিক্ষার্থী'],['student','Current student / বর্তমান শিক্ষার্থী']],m.memberType||'alumni')+
- field('name','Full name *',m.name,'text',true)+`<label>Google email (private)<input type="email" value="${esc(account.identity?.email||'')}" readonly></label>`+
+ '<p class="full">Your Google account supplies your name and verified email when available. We do not read your Gmail inbox. Fields marked * are required. Your changes stay in this form while you are signed in; submit to save them to your profile.</p>'+select('memberType','Member type *',[['alumni','Alumni / প্রাক্তন শিক্ষার্থী'],['student','Current student / বর্তমান শিক্ষার্থী'],['former','Former student (left before completing)']],m.memberType||'alumni')+
+ `<label>Full name *<input name="name" value="${esc(m.name||'')}" required maxlength="200" ${account.profile||account.legacyRecord?'readonly':''}><small>After verification, name corrections require administrator review.</small></label>`+`<label>Google email (private)<input type="email" value="${esc(account.identity?.email||'')}" readonly></label>`+
  yearSelect('dakhilBatch','Dakhil year * for alumni',m.dakhilBatch||(student?'':m.batch))+select('currentClass','Current class * for students',classes,m.currentClass||(student?m.batch:''))+
- yearSelect('alimBatch','Alim year (optional)',m.alimBatch)+yearSelect('fazilBatch','Fazil year (optional)',m.fazilBatch)+
+ yearSelect('attendanceYear','Attendance year (current or last attended)',m.attendanceYear)+yearSelect('alimBatch','Alim year (optional)',m.alimBatch)+yearSelect('fazilBatch','Fazil year (optional)',m.fazilBatch)+
  suggestedField('stream','Stream / বিভাগ',m.stream,'Select or type your stream',['General','Science','Humanities','Business Studies'])+
  suggestedField('profession','Profession',m.profession,'Select or type: Education, Healthcare, Student',['Education','Healthcare','Engineering','Information Technology','Business','Government service','Agriculture','Student','Self-employed','Retired','Other'])+
  '<h3 class="full">Current position and institution / বর্তমান পদ ও প্রতিষ্ঠান</h3>'+
@@ -42,10 +43,10 @@ editProfile=function(){
  '<details class="full"><summary>Additional private details (optional)</summary>'+field('father','Father’s name',m.father)+field('permanentAddress','Permanent address',m.permanentAddress)+'</details>'+
  select('blood','Blood group (optional)',['','A+','A-','B+','B-','O+','O-','AB+','AB-'].map(x=>[x,x||'Not provided']),m.blood)+
  area('verification','Private verification: class/roll or teacher reference *',m.verification||(account.legacyRecord?'Identity already verified by administrator.':''),true,500)+
- check('mentoring','I accept career counselling requests',m.mentoring)+check('donor','List me as a volunteer blood donor',m.donor)+check('publicContact','Publish my phone number',m.publicContact)+check('consent','I consent to publication of my approved public profile *',m.consent),
- d=>api('profile',{...d,batch:d.memberType==='student'?d.currentClass:d.dakhilBatch,claimSelected:!!account.legacyRecord}).then(x=>{registrationDraft=null;location.hash='account';return x;}));
+ check('mentoring','I accept career counselling requests',m.mentoring)+check('donor','List me as a volunteer blood donor',m.donor)+check('publicContact','Publish my phone number',m.publicContact)+check('consent','I consent to association registration and the stated privacy rules (current student profiles stay private) *',m.consent),
+ d=>api('profile',{...d,batch:['student','former'].includes(d.memberType)?d.currentClass:d.dakhilBatch,claimSelected:!!account.legacyRecord}).then(x=>{registrationDraft=null;location.hash='account';return x;}));
  const formElement=$('editorForm');
- function updateRequirements(){const isStudent=formElement.elements.memberType.value==='student';formElement.elements.dakhilBatch.required=!isStudent;formElement.elements.currentClass.required=isStudent;formElement.elements.currentClass.closest('label').hidden=!isStudent;}
+ function updateRequirements(){const isStudent=['student','former'].includes(formElement.elements.memberType.value);formElement.elements.attendanceYear.required=isStudent;formElement.elements.attendanceYear.closest('label').hidden=!isStudent;formElement.elements.dakhilBatch.required=!isStudent;formElement.elements.currentClass.required=isStudent;formElement.elements.currentClass.closest('label').hidden=!isStudent;}
  function retainDraft(){const values=new FormData(formElement);registrationDraft=Object.fromEntries(values);for(const key of ['consent','mentoring','donor','publicContact'])registrationDraft[key]=values.has(key);}
  formElement.oninput=retainDraft;formElement.onchange=()=>{updateRequirements();retainDraft();};updateRequirements();
 };

@@ -18,11 +18,9 @@ if [[ "$(git branch --show-current)" != main ]]; then
 fi
 git pull --ff-only
 # Refuse to overwrite an unexpected release. Review newer repository changes first.
-if [[ "$(git rev-parse HEAD)" != a7feed91bde84a5e6ff7f74c33b29bd5d270ec6c ]]; then
-  if ! shasum -a 256 -c "$source_dir/scripts/search-release.sha256" >/dev/null 2>&1 && { [[ -e assets/member-flow.js ]] || ! shasum -a 256 -c "$source_dir/scripts/previous-release.sha256" >/dev/null 2>&1; }; then
-    echo 'Repository contains changes beyond the known releases. Reconcile those changes before applying this package.' >&2
-    exit 1
-  fi
+if [[ "$(git rev-parse HEAD)" != 0056d6f5272582dacac63f2d0af3707cb7d9dd71 ]]; then
+ echo 'Repository changed since this update was prepared. Stop and reconcile before applying.' >&2
+ exit 1
 fi
 for item in index.html assets api database scripts tests docs package.json README.md vercel.json; do
   cp -R "$source_dir/$item" .
@@ -31,5 +29,5 @@ npm ci
 npm test
 npm run check
 git add index.html assets api database scripts tests docs package.json README.md vercel.json
-git commit -m "Simplify registration with Google prefill, year lists and profession suggestions"
+git commit -m "Add navy identity, education search and protected member registration"
 git push origin main

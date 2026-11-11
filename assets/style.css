@@ -25,3 +25,7 @@ button,.button{min-height:44px}
 
 /* Full-frame assets and readable registration controls */
 .brand img{width:130px;height:auto;max-height:none;object-fit:contain;border-radius:0;flex-shrink:0}.campus img{width:100%;height:auto;max-height:none;object-fit:contain}.post-image{width:100%;height:auto;max-height:none;object-fit:contain}label{display:block}input,select,textarea{max-width:100%;box-sizing:border-box} .review .pre{overflow-wrap:anywhere;white-space:pre-wrap}@media(max-width:600px){.brand img{width:92px}.hero{padding-top:32px}nav{align-items:flex-start}}
+
+/* Navy and gold association identity. */
+:root{--green:#17324d;--ink:#17324d;--muted:#596777;--cream:#fcf9f0;--line:#dce2e8}
+.official,footer,.status{background:#17324d}.hero-panel{background:#f2eddd;border-color:#dfd2af}.badge,.empty{background:#eef1f5}.card.featured{border-color:#c5a24a}.brand{display:flex;align-items:center;gap:12px;letter-spacing:.02em}.brand small{display:block;font-size:12px;font-weight:500;letter-spacing:0;line-height:1.5}.brand img{width:95px;height:95px;object-fit:contain;border-radius:0}.toolbar{align-items:end}.toolbar label{flex:1;min-width:160px}.toolbar button{margin-bottom:10px}input[readonly]{background:#eef1f5}.navlinks{gap:12px}nav{align-items:center}header{position:static}
